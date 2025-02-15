@@ -1,45 +1,38 @@
-import React, { useState } from 'react';
-import { getAIResponse } from './openai'; // openai.jsの関数をインポート
+import React, { useState, useEffect } from "react";
+import { getAIResponse } from './openai';  // getAIResponse をインポート
 
-function App() {
-  const [userMessage, setUserMessage] = useState("");
-  const [chatHistory, setChatHistory] = useState([]);
+const App = () => {
+  const [response, setResponse] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const handleInputChange = (event) => {
-    setUserMessage(event.target.value);
-  };
-
-  const handleSendMessage = async () => {
-    if (!userMessage) return;
-
-    setChatHistory((prev) => [...prev, { sender: "user", text: userMessage }]);
+  useEffect(() => {
+    const fetchAIResponse = async () => {
+      try {
+        console.log("Sending request to OpenAI...");
+        const aiResponse = await getAIResponse("Say hello!");
+        console.log("AI Response:", aiResponse);
+        setResponse(aiResponse);
+      } catch (error) {
+        console.error("Error fetching AI response:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    const aiResponse = await getAIResponse(userMessage);
 
-    setChatHistory((prev) => [...prev, { sender: "ai", text: aiResponse }]);
-
-    setUserMessage("");
-  };
+    fetchAIResponse();
+  }, []);
 
   return (
     <div className="App">
-      <h1>営業シミュレーション</h1>
-      <div className="chat-container">
-        {chatHistory.map((msg, index) => (
-          <div key={index} className={msg.sender}>
-            <p>{msg.text}</p>
-          </div>
-        ))}
-      </div>
-      <input 
-        type="text" 
-        value={userMessage} 
-        onChange={handleInputChange} 
-        placeholder="メッセージを入力" 
-      />
-      <button onClick={handleSendMessage}>送信</button>
+      <h1>AI Response:</h1>
+      {loading ? (
+        <p>Loading...</p>  // ローディング中
+      ) : (
+        <p>{response}</p>  // レスポンスを表示
+      )}
     </div>
   );
-}
+};
 
 export default App;
